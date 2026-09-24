@@ -1,0 +1,9 @@
+# Keep the build context tiny and avoid leaking local cruft into the image.
+.git
+.gitignore
+__pycache__/
+*.pyc
+.venv/
+venv/
+.env
+*.md
