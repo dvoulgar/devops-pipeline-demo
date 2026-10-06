@@ -41,14 +41,15 @@ jobs:
         run: docker build -t devops-pipeline-demo:${{ github.sha }} .
 
       - name: Scan image with Trivy
-        uses: aquasecurity/trivy-action@v0.33.1
-        env:
-          # Pull the vulnerability DB from the AWS ECR public mirror instead of
-          # ghcr.io, which rate-limits anonymous downloads and fails CI.
-          TRIVY_DB_REPOSITORY: public.ecr.aws/aquasecurity/trivy-db:2
-          TRIVY_JAVA_DB_REPOSITORY: public.ecr.aws/aquasecurity/trivy-java-db:1
-        with:
-          image-ref: devops-pipeline-demo:${{ github.sha }}
-          format: table
-          exit-code: "0"          # report findings but don't fail the build (yet)
-          severity: HIGH,CRITICAL
+        # Run Trivy from its official pinned image rather than the trivy-action,
+        # whose multi-step installer proved fragile (deleted sub-action tag, then
+        # a flaky binary install). A container is deterministic and portable.
+        # The DB repo is pointed at the AWS ECR mirror to avoid ghcr rate limits.
+        run: |
+          docker run --rm \
+            -v /var/run/docker.sock:/var/run/docker.sock \
+            -e TRIVY_DB_REPOSITORY=public.ecr.aws/aquasecurity/trivy-db:2 \
+            aquasec/trivy:0.65.0 image \
+            --severity HIGH,CRITICAL \
+            --exit-code 0 \
+            devops-pipeline-demo:${{ github.sha }}
