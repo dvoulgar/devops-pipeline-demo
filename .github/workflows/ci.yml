@@ -42,6 +42,11 @@ jobs:
 
       - name: Scan image with Trivy
         uses: aquasecurity/trivy-action@v0.33.1
+        env:
+          # Pull the vulnerability DB from the AWS ECR public mirror instead of
+          # ghcr.io, which rate-limits anonymous downloads and fails CI.
+          TRIVY_DB_REPOSITORY: public.ecr.aws/aquasecurity/trivy-db:2
+          TRIVY_JAVA_DB_REPOSITORY: public.ecr.aws/aquasecurity/trivy-java-db:1
         with:
           image-ref: devops-pipeline-demo:${{ github.sha }}
           format: table
