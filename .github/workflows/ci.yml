@@ -25,7 +25,9 @@ jobs:
           pip install -r requirements-dev.txt
 
       - name: Run tests
-        run: pytest -v
+        # 'python -m pytest' (not bare 'pytest') puts the repo root on the
+        # import path, so 'from app.main import app' resolves in CI.
+        run: python -m pytest -v
 
   # ---- Job 2: build the image and scan it for vulnerabilities ----
   build-and-scan:
