@@ -1,0 +1,4 @@
+# Tools needed to TEST the app, kept separate from the app's runtime deps.
+# The production image (requirements.txt) stays lean — test tools never ship.
+pytest==8.3.3
+httpx==0.27.2
