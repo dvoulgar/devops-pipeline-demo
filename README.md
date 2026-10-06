@@ -1,40 +1,45 @@
 # devops-pipeline-demo
 
-A minimal web service used as the deploy target for an end-to-end DevOps
-pipeline. The application is intentionally simple — the portfolio value is in
-the tooling around it: containerization, CI/CD, Infrastructure as Code, and
-monitoring.
+**Status:** ✅ Phase 1 complete — containerized service running locally and in Docker.
 
-## Architecture (target state)
+An end-to-end DevOps pipeline built in deliberate phases: a minimal web service
+taken from source all the way to a monitored deployment on Kubernetes. The
+application is intentionally simple — the engineering value is in the tooling
+around it: containerization, CI/CD, Infrastructure as Code, and observability.
+
+## Target architecture
 
 ```
   Code (GitHub)
       │  push
       ▼
-  CI/CD (build → test → scan → push image)   ← TODO
+  CI/CD  (build → test → scan → push image)
       │
       ▼
-  Container registry (ECR)                    ← TODO
+  Container registry (ECR)
       │
       ▼
-  Kubernetes (EKS), provisioned by Terraform  ← TODO
+  Kubernetes (EKS), provisioned by Terraform
       │  Ingress
       ▼
   Users  ──►  /  ,  /health
       ▲
       │ scrape
-  Prometheus + Grafana (monitoring)           ← TODO
+  Prometheus + Grafana (monitoring)
 ```
 
 ## The app
 
-| Endpoint  | Purpose                                             |
-|-----------|-----------------------------------------------------|
-| `GET /`       | Root — returns service name + version           |
-| `GET /health` | Liveness/readiness probe + monitoring target    |
+| Endpoint      | Purpose                                      |
+|---------------|----------------------------------------------|
+| `GET /`       | Root — returns service name + version        |
+| `GET /health` | Liveness/readiness probe + monitoring target |
 
 Version comes from the `APP_VERSION` env var so the pipeline can stamp each
 build with a git SHA or semver tag instead of using `:latest`.
+
+The container image is a multi-stage build, runs as a non-root user, and
+includes a healthcheck.
 
 ## Run locally (no Docker)
 
@@ -53,11 +58,17 @@ docker run -p 8080:8080 devops-pipeline-demo:0.1.0
 curl localhost:8080/health   # -> {"status":"ok"}
 ```
 
-## Roadmap
+## Build phases
 
-- [x] Minimal service + `/health`
-- [x] Containerized (multi-stage, non-root, healthcheck)
-- [ ] CI/CD pipeline (build, test, Trivy scan, push to ECR)
-- [ ] Terraform: VPC + EKS + ECR (remote state in S3)
-- [ ] Deploy to EKS via Ingress
-- [ ] Prometheus + Grafana dashboards and alerts
+The project is delivered in phases, each building on the last:
+
+- **Phase 1 — Service & container** ✅ *(complete)*
+  Minimal FastAPI service with `/health`, multi-stage non-root Dockerfile.
+- **Phase 2 — CI/CD** *(in progress)*
+  GitHub Actions: build, test, Trivy image scan, push to ECR.
+- **Phase 3 — Infrastructure as Code**
+  Terraform: VPC + EKS + ECR, remote state in S3.
+- **Phase 4 — Deploy to Kubernetes**
+  Kubernetes manifests + Ingress, probes wired to `/health`.
+- **Phase 5 — Observability**
+  Prometheus + Grafana dashboards and alerting.
